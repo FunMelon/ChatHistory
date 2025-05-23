@@ -1,6 +1,6 @@
 import hashlib
 from typing import Dict, List
-from .config import PG_NAMESPACE
+from src.utils.config import PG_NAMESPACE
 
 def get_sha256(string: str) -> str:
     """获取字符串的SHA256值"""

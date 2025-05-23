@@ -160,7 +160,7 @@ if __name__ == "__main__":
     init_logger()
 
     # 检查是否在正确的目录下运行
-    if not os.path.exists("./setup.py"):
+    if not os.path.exists("setup.py"):
         logger.fatal("Please run this script from the 'lib/quick_algo' directory.")
         sys.exit(1)
 

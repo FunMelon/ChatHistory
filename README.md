@@ -13,7 +13,7 @@ quick_algo库并没有包含在requirement中，请在文件夹找到对应的�
 ```sh
 python main.py
 ```
-### 启用gradio的WebUI
+### 启用gradio的WebUI（已废弃）
 ```sh
 python WebUI.py
 ```

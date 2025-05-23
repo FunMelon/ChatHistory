@@ -9,11 +9,10 @@ import tqdm
 import faiss
 import urllib
 
-from .llm_client import LLMClient
-from .utils.config import ENT_NAMESPACE, PG_NAMESPACE, REL_NAMESPACE, global_config
+from src.utils.llm_client import LLMClient
+from src.utils.config import ENT_NAMESPACE, PG_NAMESPACE, REL_NAMESPACE, global_config
 from .utils.hash import get_sha256
-from .utils.global_logger import logger
-
+from src.utils.global_logger import logger
 
 @dataclass
 class EmbeddingStoreItem:

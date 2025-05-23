@@ -2,10 +2,10 @@ import json
 from typing import Any, Dict, List
 
 
-from .utils.config import INVALID_ENTITY, global_config
+from src.utils.config import INVALID_ENTITY, global_config
 from .embedding_store import EmbeddingManager
 from .kg_manager import KGManager
-from .utils.global_logger import logger
+from src.utils.global_logger import logger
 from .utils.hash import hash_deduplicate
 import urllib
 

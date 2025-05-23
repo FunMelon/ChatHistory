@@ -2,10 +2,10 @@ import json
 import time
 from typing import List
 
-from .utils.global_logger import logger
-from . import prompt_template
-from .utils.config import global_config, INVALID_ENTITY
-from .llm_client import LLMClient
+from src.utils.global_logger import logger
+from src.utils import prompt_template
+from src.utils.config import global_config, INVALID_ENTITY
+from src.utils.llm_client import LLMClient
 from .utils.json_fix import fix_broken_generated_json
 
 

@@ -1,8 +1,8 @@
 import json
 import os
 
-from .global_logger import logger
-from .config import global_config
+from src.utils.global_logger import logger
+from src.utils.config import global_config
 from .hash import get_sha256
 import urllib
 

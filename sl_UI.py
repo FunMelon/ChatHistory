@@ -1,10 +1,11 @@
 import streamlit as st
-from streamlit_chat import message
-from src.plugins.memory_system.src.memory_manager import MemoryManager
-from src.plugins.memory_system.src.info_extraction import pre_process
+from src.memory.memory_manager import MemoryManager
 
-memory = MemoryManager()  # 创建MemoryManager实例
+memory = MemoryManager("孔子")  # 创建MemoryManager实例
 
+def get_avatar(agent_name):
+    return agent_name
+    
 st.set_page_config(
     page_title="ChatApp",
     page_icon=" ",
@@ -38,7 +39,8 @@ if user_input := st.chat_input("Chat with history character: "):
     response, material = get_response_material(user_input, st.session_state.history)
 
     st.session_state.history.append({"role": "user", "content": user_input})
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=get_avatar("孔子.jpg")):
+        st.markdown("**孔子**")
         st.markdown(response)
     st.session_state.history.append({"role": "assistant", "content": response})
 

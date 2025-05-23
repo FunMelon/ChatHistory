@@ -3,11 +3,11 @@
 /venv/
 /.gradio/
 **/__pycache__/
-/src/plugins/memory_system/data/
+/src/memory/data/
 /data/
-/src/plugins/memory_system/temp/
+/src/memory/temp/
 /temp/
 
-/src/plugins/memory_system/test.py
+/src/memory/test.py
 test.py
-/src/plugins/memory_system/RAG.png
+/src/memory/RAG.png

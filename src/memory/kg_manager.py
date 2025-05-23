@@ -11,7 +11,7 @@ import urllib
 
 from .utils.hash import get_sha256
 from .embedding_store import EmbeddingManager, EmbeddingStoreItem
-from .utils.config import (
+from src.utils.config import (
     ENT_NAMESPACE,
     PG_NAMESPACE,
     RAG_ENT_CNT_NAMESPACE,
@@ -20,7 +20,7 @@ from .utils.config import (
     global_config,
 )
 
-from .utils.global_logger import logger
+from src.utils.global_logger import logger
 
 class KGManager:
     def __init__(self, _agent_name: str):

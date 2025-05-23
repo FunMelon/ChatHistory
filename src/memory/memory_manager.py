@@ -1,17 +1,16 @@
-from .utils.config import PG_NAMESPACE, global_config
+from src.utils.config import PG_NAMESPACE, global_config
 from .embedding_store import EmbeddingManager
 from .kg_manager import KGManager
-from .llm_client import LLMClient
-from .mem_active_manager import MemoryActiveManager
+from src.utils.llm_client import LLMClient
 from .open_ie import OpenIE, handle_import_openie
 from .qa_manager import QAManager
-from .utils.global_logger import logger
+from src.utils.global_logger import logger
 
 class MemoryManager:
     def __init__(self, _agent_name):
         self._agent_name = _agent_name
         try:
-            from ..lib import quick_algo
+            from lib import quick_algo
             print("quick_algo库已加载")
         except ImportError:
             print("未找到quick_algo库，无法使用quick_algo算法")
@@ -66,12 +65,6 @@ class MemoryManager:
             llm_client_list[global_config["qa"]["llm"]["provider"]],
         )
 
-        # 记忆激活（用于记忆库）
-        self._inspire_manager = MemoryActiveManager(
-            self._embed_manager,
-            llm_client_list[global_config["embedding"]["provider"]],
-        )
-
     def import_oie(self):
         logger.info("正在导入OpenIE数据文件")
         try:
@@ -86,10 +79,6 @@ class MemoryManager:
     def query(self, question):
         """处理查询"""
         return self._qa_manager.process_query_beautiful(question)
-    
-    def get_activation(self, question):
-        """处理激活度查询"""
-        return self._inspire_manager.get_activation(question)
     
     def get_qa(self, question):
         """处理问答查询"""

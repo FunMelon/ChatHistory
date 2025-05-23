@@ -1,12 +1,12 @@
 import time
 from typing import Tuple, List, Dict
 
-from .utils.global_logger import logger
-from . import prompt_template
+from src.utils.global_logger import logger
+from src.utils import prompt_template
 from .embedding_store import EmbeddingManager
-from .llm_client import LLMClient
+from src.utils.llm_client import LLMClient
 from .kg_manager import KGManager
-from .utils.config import global_config
+from src.utils.config import global_config
 from .utils.dyn_topk import dyn_select_top_k
 
 

@@ -1,7 +1,7 @@
 import sys
 
-from src.plugins.memory_system.src.memory_manager import MemoryManager
-from src.plugins.memory_system.src.info_extraction import pre_process
+from src.memory.memory_manager import MemoryManager
+from src.memory.info_extraction import pre_process
 
 def process_instruction(
     inst: str,

@@ -6,10 +6,10 @@ from threading import Lock, Event
 
 import tqdm
 
-from .utils.global_logger import logger
-from .utils.config import global_config
+from src.utils.global_logger import logger
+from src.utils.config import global_config
 from .ie_process import info_extract_from_str
-from .llm_client import LLMClient
+from src.utils.llm_client import LLMClient
 from .open_ie import OpenIE
 from .utils.raw_processing import load_raw_data
 
