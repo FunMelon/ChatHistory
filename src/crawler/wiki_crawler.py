@@ -4,33 +4,38 @@ import urllib.parse
 from opencc import OpenCC
 import json
 import re
+import os
+from src.utils.global_logger import logger
+from src.utils.config import global_config
 
 def trad_to_simp(text):
-    """
-    将繁体中文句子转换为简体中文
-    
-    参数:
-        text (str): 需要转换的繁体中文句子
-    
-    返回:
-        str: 转换后的简体中文句子
-    """
+    """繁体转简体"""
     try:
-        # 使用 OpenCC 进行繁简转换
-        # 't2s' 表示繁体到简体的转换
         cc = OpenCC('t2s')
-        simplified_text = cc.convert(text)
-        return simplified_text
+        return cc.convert(text)
     except Exception as e:
-        # 处理可能的异常
-        print(f"转换过程中出现错误: {e}")
+        logger.error(f"转换错误: {e}")
         return None
 
 def remove_references(text):
-    # 去除形如 [1]、[注 1] 等脚注标记
+    """去除脚注标记如 [1]、[注 1] 等"""
     return re.sub(r'\[[^\[\]]*?\]', '', text)
 
-def wikipedia_search_and_save(keyword): 
+def download_avatar(image_url, save_path):
+    """下载人物头像"""
+    try:
+        img_response = requests.get(image_url, stream=True)
+        if img_response.status_code == 200:
+            with open(save_path, 'wb') as f:
+                for chunk in img_response.iter_content(1024):
+                    f.write(chunk)
+            logger.info(f"人物头像已保存到 {save_path}")
+        else:
+            logger.error("图片下载失败，状态码：", img_response.status_code)
+    except Exception as e:
+        logger.error("下载图片出错：%s", e)
+
+def wikipedia_search_and_save(keyword):
     encoded_keyword = urllib.parse.quote(keyword)
     url = f"https://zh.wikipedia.org/wiki/{encoded_keyword}"
 
@@ -41,15 +46,16 @@ def wikipedia_search_and_save(keyword):
     try:
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
-            print(f"请求失败，状态码：{response.status_code}")
+            logger.error(f"请求失败，状态码：{response.status_code}")
             return
 
         response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, 'html.parser')
 
+        # 获取段落内容
         content_div = soup.find("div", id="mw-content-text")
         if not content_div:
-            print("未能找到词条内容。")
+            logger.error("未能找到词条内容。")
             return
 
         paragraphs = content_div.find_all("p")
@@ -62,20 +68,49 @@ def wikipedia_search_and_save(keyword):
                 content_list.append(text)
 
         if not content_list:
-            print("未能提取到有效段落内容。")
+            logger.error("未能提取到有效段落内容。")
             return
 
-        filename = f"{keyword}.json"
+        # 尝试提取人物头像（信息框中的第一张图）
+        infobox = soup.find("table", class_="infobox")
+        image_url = None
+        if infobox:
+            img = infobox.find("img")
+            if img and img.get("src"):
+                image_url = "https:" + img["src"]
+
+        # 保存文本内容
+        dir_path = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(keyword)
+        os.makedirs(dir_path, exist_ok=True)
+        filename = os.path.join(dir_path + global_config["persistence"]["raw_data_path"])
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(content_list, f, ensure_ascii=False, indent=2)
+        logger.info(f"维基百科内容已保存到 {filename}")
 
-        print(f"维基百科内容已成功保存到 {filename}。")
+        # 下载人物头像
+        if image_url:
+            image_ext = os.path.splitext(image_url)[1]
+            image_filename = os.path.join(dir_path + f"/avatar{image_ext}")
+            download_avatar(image_url, image_filename)
+        else:
+            logger.error(f"未找到{keyword}的头像。")
 
     except requests.RequestException as e:
-        print("网络请求出错：", e)
+        logger.error("网络请求出错：%s", e)
     except Exception as e:
-        print("发生错误：", e)
+        logger.error("发生错误：%s", e)
+
+def crawl_data(keyword):
+    """爬取数据"""
+    wikipedia_search_and_save(keyword)
+
+def test(keyword):
+    """测试函数"""
+    dir_path = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(keyword)
+    os.makedirs(dir_path, exist_ok=True)
+    filename = os.path.join(dir_path + global_config["persistence"]["raw_data_path"])
+    print(filename)
 
 if __name__ == "__main__":
-    keyword = "杨玉环"  # 示例关键词
+    keyword = "牛顿"  # 示例关键词
     wikipedia_search_and_save(keyword)

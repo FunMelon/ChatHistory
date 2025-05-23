@@ -61,14 +61,14 @@ class QAManager:
 
         for res in relation_search_res:
             rel_str = self.embed_manager.relation_embedding_store.store.get(res[0]).str
-            print(f"找到相关关系，相似度：{(res[1] * 100):.2f}%  -  {rel_str}")
+            logger.info(f"找到相关关系，相似度：{(res[1] * 100):.2f}%  -  {rel_str}")
             # 提取三元组（假设格式始终为形如 ('主体', '关系', '客体') 的字符串）
             try:
                 triple = eval(rel_str)
                 if isinstance(triple, tuple) and len(triple) == 3:
                     relations.append(triple)
             except Exception as e:
-                    print(f"⚠️ 三元组解析失败：{rel_str}，错误：{e}")
+                    logger.error(f"⚠️ 三元组解析失败：{rel_str}，错误：{e}")
 
         # 根据问题Embedding查询Paragraph Embedding库
         part_start_time =time.perf_counter()
