@@ -63,8 +63,8 @@ def process_instruction(
             print(f"无效指令：{inst}")
 
 def cmd():
-    memory = MemoryManager()  # 创建MemoryManager实例
-    pre_process() # 读取文本生成OpenIE数据
+    memory = MemoryManager("苏格拉底")  # 创建MemoryManager实例
+    pre_process("苏格拉底") # 读取文本生成OpenIE数据
     memory.import_oie() # 导入OpenIE数据到记忆库
     # print(memory.query("苏格拉底和哲学？"))  # 回答问题
     while True:

@@ -8,7 +8,7 @@ from .qa_manager import QAManager
 from .utils.global_logger import logger
 
 class MemoryManager:
-    def __init__(self, _agent_name="孔子"):
+    def __init__(self, _agent_name):
         self._agent_name = _agent_name
         try:
             from ..lib import quick_algo

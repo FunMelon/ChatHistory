@@ -12,6 +12,7 @@ matplotlib==3.10.1
 jsonlines==4.0.0
 setuptools==78.1.0
 ruff==0.11.1
-gradio
-streamlit
-streamlit-chat
+gradio==5.30.0
+streamlit==1.45.1
+streamlit-chat==0.1.1
+bs4==0.0.2

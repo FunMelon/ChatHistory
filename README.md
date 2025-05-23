@@ -39,10 +39,10 @@ streamlit run sl_UI.py
     - [ ] 实现聊天记录的实时存入记忆库;
     - [ ] 换用数据库软件来存储记忆库;
 ## 🗂文件记忆库存储示例
-不同的agent的记忆库会以agent的名字来进行命名，初始文件只有爬取的import.json文件，为一个由人物资料的句子构成的json数组，经过openie处理得到openie.json文件，然后会被记忆库处理得到embedding和rag。
+不同的agent的记忆库会以agent的名字转ASCII来进行命名，初始文件只有爬取的import.json文件，为一个由人物资料的句子构成的json数组，经过openie处理得到openie.json文件，然后会被记忆库处理得到embedding和rag。此外data目录下还有一个list.txt来保存现在有多少个agent。
 ```
-data
-├── 孔子
+.
+├── %E5%AD%94%E5%AD%90
 │   ├── embedding
 │   │   ├── entity_i2h.json
 │   │   ├── entity.index
@@ -59,23 +59,24 @@ data
 │       ├── rag-ent-cnt.parquet
 │       ├── rag-graph.graphml
 │       └── rag-pg-hash.json
-└── 苏格拉底
-    ├── embedding
-    │   ├── entity_i2h.json
-    │   ├── entity.index
-    │   ├── entity.parquet
-    │   ├── paragraph_i2h.json
-    │   ├── paragraph.index
-    │   ├── paragraph.parquet
-    │   ├── relation_i2h.json
-    │   ├── relation.index
-    │   └── relation.parquet
-    ├── import.json
-    ├── openie.json
-    └── rag
-        ├── rag-ent-cnt.parquet
-        ├── rag-graph.graphml
-        └── rag-pg-hash.json
+├── %E8%8B%8F%E6%A0%BC%E6%8B%89%E5%BA%95
+│   ├── embedding
+│   │   ├── entity_i2h.json
+│   │   ├── entity.index
+│   │   ├── entity.parquet
+│   │   ├── paragraph_i2h.json
+│   │   ├── paragraph.index
+│   │   ├── paragraph.parquet
+│   │   ├── relation_i2h.json
+│   │   ├── relation.index
+│   │   └── relation.parquet
+│   ├── import.json
+│   ├── openie.json
+│   └── rag
+│       ├── rag-ent-cnt.parquet
+│       ├── rag-graph.graphml
+│       └── rag-pg-hash.json
+└── list.txt
 ```
 ## ❤️致谢
 - [MaiMBot-LPMM-Demo](https://github.com/MaiM-with-u/MaiMBot-LPMM)：本项目使用的记忆体机制

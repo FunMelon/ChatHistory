@@ -4,7 +4,7 @@ import os
 from .global_logger import logger
 from .config import global_config
 from .hash import get_sha256
-
+import urllib
 
 def load_raw_data(_agent_name: str) -> tuple[list[str], list[str]]:
     """加载原始数据文件
@@ -16,7 +16,7 @@ def load_raw_data(_agent_name: str) -> tuple[list[str], list[str]]:
         - md5_set: 原始数据的SHA256集合
     """
     # 读取import.json文件
-    store_dir = global_config["persistence"]["data_root_path"] + "/" + _agent_name + global_config["persistence"]["raw_data_path"]
+    store_dir = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(_agent_name) + global_config["persistence"]["raw_data_path"]
     if os.path.exists(store_dir) is True:
         with open(
             store_dir, "r", encoding="utf-8"

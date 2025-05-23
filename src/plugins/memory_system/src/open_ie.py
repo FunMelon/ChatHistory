@@ -7,7 +7,7 @@ from .embedding_store import EmbeddingManager
 from .kg_manager import KGManager
 from .utils.global_logger import logger
 from .utils.hash import hash_deduplicate
-
+import urllib
 
 def _filter_invalid_entities(entities: List[str]) -> List[str]:
     """过滤无效的实体"""
@@ -105,7 +105,7 @@ class OpenIE:
     def load(_agent_name: str) -> "OpenIE":
         """从文件中加载OpenIE数据"""
         with open(
-            global_config["persistence"]["data_root_path"] + "/" + _agent_name + global_config["persistence"]["openie_data_path"], "r", encoding="utf-8"
+            global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(_agent_name) + global_config["persistence"]["openie_data_path"], "r", encoding="utf-8"
         ) as f:
             data = json.loads(f.read())
 
@@ -117,7 +117,7 @@ class OpenIE:
     def save(openie_data: "OpenIE", _agent_name: str):
         """保存OpenIE数据到文件"""
         with open(
-            global_config["persistence"]["data_root_path"] + "/" + _agent_name + global_config["persistence"]["openie_data_path"], "w", encoding="utf-8"
+            global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(_agent_name) + global_config["persistence"]["openie_data_path"], "w", encoding="utf-8"
         ) as f:
             f.write(json.dumps(openie_data._to_dict(), ensure_ascii=False, indent=4))
 

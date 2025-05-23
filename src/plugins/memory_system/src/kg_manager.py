@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import tqdm
 from quick_algo import di_graph, pagerank
-
+import urllib
 
 from .utils.hash import get_sha256
 from .embedding_store import EmbeddingManager, EmbeddingStoreItem
@@ -34,7 +34,7 @@ class KGManager:
         self.graph = di_graph.DiGraph()
 
         # 持久化相关
-        self.dir_path = global_config["persistence"]["data_root_path"] + "/" + self._agent_name + global_config["persistence"]["rag_data_dir"]
+        self.dir_path = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(self._agent_name) + global_config["persistence"]["rag_data_dir"]
         self.graph_data_path = self.dir_path + "/" + RAG_GRAPH_NAMESPACE + ".graphml"
         self.ent_cnt_data_path = (
             self.dir_path + "/" + RAG_ENT_CNT_NAMESPACE + ".parquet"
