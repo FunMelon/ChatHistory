@@ -104,13 +104,6 @@ def crawl_data(keyword):
     """爬取数据"""
     wikipedia_search_and_save(keyword)
 
-def test(keyword):
-    """测试函数"""
-    dir_path = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(keyword)
-    os.makedirs(dir_path, exist_ok=True)
-    filename = os.path.join(dir_path + global_config["persistence"]["raw_data_path"])
-    print(filename)
-
 if __name__ == "__main__":
     keyword = "牛顿"  # 示例关键词
     wikipedia_search_and_save(keyword)

@@ -65,6 +65,7 @@ class MemoryManager:
             llm_client_list[global_config["qa"]["llm"]["provider"]],
         )
 
+    # TODO: 将import_oie和pre_process合并
     def import_oie(self):
         logger.info("正在导入OpenIE数据文件")
         try:
