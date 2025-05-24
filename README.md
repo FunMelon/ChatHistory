@@ -17,7 +17,7 @@ python main.py
 ```sh
 python WebUI.py
 ```
-### 启用streamlit的WebUI
+### 启用streamlit的WebUI（推荐）
 ```
 streamlit run sl_UI.py
 ```
@@ -34,12 +34,12 @@ streamlit run sl_UI.py
     - [ ] 实现多agent协同聊天机制;
 3. 实现WebUI界面
     - [x] 实现WebUI界面的简易对话;
-    - [ ] 实现WebUI界面的智能体角色的构建和激活;
+    - [x] 实现WebUI界面的智能体角色的构建和激活;
 4. 进一步优化
     - [ ] 实现聊天记录的实时存入记忆库;
     - [ ] 换用数据库软件来存储记忆库;
 ## 🗂文件记忆库存储示例
-不同的agent的记忆库会以agent的名字转ASCII来进行命名，初始文件只有爬取的import.json文件，为一个由人物资料的句子构成的json数组，经过openie处理得到openie.json文件，然后会被记忆库处理得到embedding和rag。此外data目录下还有一个list.txt来保存现在有多少个agent。
+不同的agent的记忆库会以agent的名字转ASCII来进行命名，初始文件只有爬取的import.json文件，为一个由人物资料的句子构成的json数组，经过openie处理得到openie.json文件，然后会被记忆库处理得到embedding和rag。此外data目录下还有一个list.json来保存现在有多少个agent。
 ```
 .
 ├── %E5%AD%94%E5%AD%90

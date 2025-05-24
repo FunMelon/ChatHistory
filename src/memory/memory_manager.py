@@ -15,7 +15,6 @@ class MemoryManager:
         except ImportError:
             print("未找到quick_algo库，无法使用quick_algo算法")
             print("请安装quick_algo库 - 在lib.quick_algo中，执行命令：python setup.py build_ext --inplace")
-        # 0.检查对应的agent是否存在
         
         # 1.初始化LLM客户端
         logger.info("为agent {} 创建LLM客户端".format(self._agent_name))
@@ -56,7 +55,7 @@ class MemoryManager:
             if key not in self._embed_manager.stored_pg_hashes:
                 logger.warning(f"KG中存在Embedding库中不存在的段落：{key}")
 
-        # 问答系统（用于知识库）
+        # 问答系统（用于知识库）TODO: 未来考虑注释掉，仅仅作为知识库使用
         self._qa_manager = QAManager(
             self._embed_manager,
             self._kg_manager,
@@ -65,7 +64,7 @@ class MemoryManager:
             llm_client_list[global_config["qa"]["llm"]["provider"]],
         )
 
-    # TODO: 将import_oie和pre_process合并
+
     def import_oie(self):
         logger.info("正在导入OpenIE数据文件")
         try:

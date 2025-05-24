@@ -73,9 +73,9 @@ def signal_handler(signum, frame):
     logger.info("\n接收到中断信号，正在优雅地关闭程序...")
     shutdown_event.set()
 
-def pre_process(_agent_name: str):
+def extract_triples(_agent_name: str):
     # 设置信号处理器
-    signal.signal(signal.SIGINT, signal_handler)
+    # signal.signal(signal.SIGINT, signal_handler)
     
     logger.info("--------进行信息提取--------\n")
 

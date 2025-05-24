@@ -35,7 +35,27 @@ def download_avatar(image_url, save_path):
     except Exception as e:
         logger.error("下载图片出错：%s", e)
 
-def wikipedia_search_and_save(keyword):
+MAX_PARAGRAPH_LENGTH = 300  # 最大段落长度，超过会被截断
+
+def split_long_paragraphs(text):
+    if len(text) <= MAX_PARAGRAPH_LENGTH:
+        return [text]
+    # 按中文句号、问号、叹号分句
+    sentences = re.split(r'(?<=[。！？])', text)
+    chunks = []
+    current_chunk = ""
+    for sentence in sentences:
+        if len(current_chunk) + len(sentence) <= MAX_PARAGRAPH_LENGTH:
+            current_chunk += sentence
+        else:
+            if current_chunk:
+                chunks.append(current_chunk)
+            current_chunk = sentence
+    if current_chunk:
+        chunks.append(current_chunk)
+    return chunks
+
+def crawl_data(keyword): 
     encoded_keyword = urllib.parse.quote(keyword)
     url = f"https://zh.wikipedia.org/wiki/{encoded_keyword}"
 
@@ -65,7 +85,9 @@ def wikipedia_search_and_save(keyword):
             if text:
                 text = trad_to_simp(text)
                 text = remove_references(text)
-                content_list.append(text)
+                if text.strip():
+                    split_texts = split_long_paragraphs(text)
+                    content_list.extend(split_texts)
 
         if not content_list:
             logger.error("未能提取到有效段落内容。")
@@ -100,10 +122,7 @@ def wikipedia_search_and_save(keyword):
     except Exception as e:
         logger.error("发生错误：%s", e)
 
-def crawl_data(keyword):
-    """爬取数据"""
-    wikipedia_search_and_save(keyword)
 
 if __name__ == "__main__":
     keyword = "牛顿"  # 示例关键词
-    wikipedia_search_and_save(keyword)
+    crawl_data(keyword)

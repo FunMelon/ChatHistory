@@ -160,6 +160,9 @@ def handle_import_openie(
     entity_list_data = openie_data.extract_entity_dict()
     # 索引的三元组列表
     triple_list_data = openie_data.extract_triple_dict()
+    print(
+            f"段落数量：{len(raw_paragraphs)}，实体数量：{len(entity_list_data)}，三元组数量：{len(triple_list_data)}"
+        )
     if len(raw_paragraphs) != len(entity_list_data) or len(raw_paragraphs) != len(
         triple_list_data
     ):
