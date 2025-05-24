@@ -9,25 +9,25 @@ st.set_page_config(
 
 st.title("🏯ChatHistory")
 
-# 给对话增加history属性，将历史对话信息储存下来
+# 初始化对话历史
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# 初始化agent_list并存储在st.session_state中
+# 初始化 agent 列表
 if "agent_list" not in st.session_state:
     st.session_state.agent_list = [Agent(name) for name in Agent.get_all_agent_names()]
 
-# 设置用户是否可以进行交互
+# 控制用户交互状态
 if "interactable" not in st.session_state:
     st.session_state.interactable = True
 
-# 初始化每个agent的checkbox状态
+# 初始化每个 agent 的 checkbox 状态
 for agent in st.session_state.agent_list:
     checkbox_key = f"agent_{agent.name}"
     if checkbox_key not in st.session_state:
         st.session_state[checkbox_key] = False
 
-# 处理checkbox状态变化并更新online状态
+# 更新 agent 在线状态
 def update_agent_status():
     for agent in st.session_state.agent_list:
         key = f"agent_{agent.name}"
@@ -37,38 +37,45 @@ def update_agent_status():
         elif not desired_status and agent.online:
             agent.logout()
 
-# 执行状态更新
 update_agent_status()
 
-# 显示历史信息
+# 显示历史消息（包括头像）- 修复后的版本
 for message in st.session_state.history:
-    with st.chat_message(message["role"]):
+    with st.chat_message(message["role"], avatar=message.get("avatar", None)):
         st.markdown(message["content"])
 
 material = "这里会显示检索的结果"
 
-# 用户输入处理
+# 处理用户输入
 if not st.session_state.get("interactable", True):
     st.warning("请稍候...")
 else:
     if user_input := st.chat_input("Chat with history character: "):
         st.session_state.interactable = False
 
-        # 显示用户输入
+        # 用户输入消息
         with st.chat_message("user"):
             st.markdown(user_input)
-        st.session_state.history.append({"role": "user", "content": user_input})
+        st.session_state.history.append({
+            "role": "user",
+            "content": user_input,
+            "avatar": None  # 可选：你可以加用户自定义头像路径
+        })
 
-        # 显示所有在线 agent 的响应
+        # agent 响应
         for agent in st.session_state.agent_list:
             if agent.online:
                 response, material = agent.chat(user_input)
                 with st.chat_message("assistant", avatar=agent.avatar_path):
                     st.markdown(f"**{agent.name}**")
                     st.markdown(response)
-                st.session_state.history.append({"role": "assistant", "content": f"**{agent.name}**: {response}"})
+                st.session_state.history.append({
+                    "role": "assistant",
+                    "content": f"**{agent.name}**: {response}",
+                    "avatar": agent.avatar_path
+                })
 
-        # 保持最多20条历史记录
+        # 限制历史消息数量
         if len(st.session_state.history) > 20:
             st.session_state.history = st.session_state.history[-20:]
 
