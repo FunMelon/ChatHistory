@@ -8,6 +8,8 @@ import os
 from src.utils.global_logger import logger
 from src.utils.config import global_config
 
+MAX_PARAGRAPH_LENGTH = 200  # 最大段落长度，超过会被切分
+
 def trad_to_simp(text):
     """繁体转简体"""
     try:
@@ -34,8 +36,6 @@ def download_avatar(image_url, save_path):
             logger.error("图片下载失败，状态码：", img_response.status_code)
     except Exception as e:
         logger.error("下载图片出错：%s", e)
-
-MAX_PARAGRAPH_LENGTH = 300  # 最大段落长度，超过会被截断
 
 def split_long_paragraphs(text):
     if len(text) <= MAX_PARAGRAPH_LENGTH:

@@ -46,7 +46,7 @@ class QAManager:
         )
         # 过滤阈值
         # 考虑动态阈值：当存在显著数值差异的结果时，保留显著结果；否则，保留所有结果
-        relation_search_res = dyn_select_top_k(relation_search_res, 0.5, 1.0)
+        relation_search_res = dyn_select_top_k(relation_search_res)
         if (
             relation_search_res[0][1]
             < global_config["qa"]["params"]["relation_threshold"]
@@ -95,10 +95,7 @@ class QAManager:
             result = paragraph_search_res
             ppr_node_weights = None
 
-        # 过滤阈值
-        # print(f"保留的关键词：{relations_keywords}")
-        # result = dyn_select_top_k_with_keywords(result, 0.5, 1.0, relations_keywords)
-        result = dyn_select_top_k(result, 0.5, 1.0)
+        result = dyn_select_top_k(result)
 
         for res in result:
             raw_paragraph = self.embed_manager.paragraphs_embedding_store.store[
