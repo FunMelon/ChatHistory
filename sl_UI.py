@@ -1,5 +1,6 @@
 import streamlit as st
 from src.agent import Agent
+from src.utils.global_logger import logger
 
 st.set_page_config(
     page_title="ChatHistory：穿越历史人物对话",
@@ -9,6 +10,33 @@ st.set_page_config(
 
 st.title("🏯ChatHistory")
 
+# dialog 方式创建 Agent, FIXME: 将这个dialog设置为不可关闭状态，因为现在实在是不会所以只能没骨气地求用户了
+@st.dialog(title="🥺请完成后再关闭当前页面", width="large")
+def create_agent_dialog(name):
+    st.markdown(f"🧟`{name}`正在转世中...")
+    success = Agent.build_openie(name)
+    if success:
+        new_agent = Agent(name)
+        st.session_state.agent_list.append(new_agent)
+        st.session_state[f"agent_{new_agent.name}"] = False
+        st.success(f"Agent {name} 创建成功！")
+    else:
+        st.error(f"无法创建 Agent {name}")
+    st.session_state.interactable = True
+    # st.rerun()  # 自动关闭弹窗并刷新界面，FIXME:这行代码有bug，rerun会导致登录的列表被清空
+
+@st.dialog(title="🥺请登录完成后再关闭当前页面", width="large")
+def agent_login_dialog(agent):
+    st.markdown(f"🧙`{agent.name}`正在登录中...")
+    success = agent.login()
+    if success:
+        st.success(f"Agent {agent.name} 创建成功！")
+    else:
+        print("登录失败")
+        st.error(f"Agent {agent.name} 登录失败")
+    st.session_state.interactable = True
+    # st.rerun()
+    
 # 初始化对话历史
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -33,7 +61,9 @@ def update_agent_status():
         key = f"agent_{agent.name}"
         desired_status = st.session_state.get(key, False)
         if desired_status and not agent.online:
-            agent.login()
+            # 登录要求用户不能操作
+            st.session_state.interactable = False
+            agent_login_dialog(agent)
         elif not desired_status and agent.online:
             agent.logout()
 
@@ -47,57 +77,52 @@ for message in st.session_state.history:
 material = "这里会显示检索的结果"
 
 # 处理用户输入
-if not st.session_state.get("interactable", True):
-    st.warning("请稍候...")
-else:
-    if user_input := st.chat_input("Chat with history character: "):
-        st.session_state.interactable = False
+if user_input := st.chat_input(placeholder="和历史上的人物对话: ", disabled= not st.session_state.get("interactable", True)):
+    st.session_state.interactable = False
 
-        # 用户输入消息
-        with st.chat_message("user"):
-            st.markdown(user_input)
-        st.session_state.history.append({
-            "role": "user",
-            "content": user_input,
-            "avatar": None  # 可选：你可以加用户自定义头像路径
-        })
+    # 用户输入消息
+    logger.info(f"用户输入了: {user_input}")
+    with st.chat_message("user"):
+        st.markdown(user_input)
+    st.session_state.history.append({
+    "role": "user",
+        "content": user_input,
+        "avatar": None  # 可选：你可以加用户自定义头像路径
+    })
 
-        # agent 响应
-        for agent in st.session_state.agent_list:
-            if agent.online:
-                response, material = agent.chat(user_input)
-                with st.chat_message("assistant", avatar=agent.avatar_path):
-                    st.markdown(f"**{agent.name}**")
-                    st.markdown(response)
-                st.session_state.history.append({
-                    "role": "assistant",
-                    "content": f"**{agent.name}**: {response}",
-                    "avatar": agent.avatar_path
-                })
+    # agent 响应
+    for agent in st.session_state.agent_list:
+        if agent.online:
+            response, material = agent.chat(user_input)
+            with st.chat_message("assistant", avatar=agent.avatar_path):
+                st.markdown(f"**{agent.name}**")
+                st.markdown(response)
+            st.session_state.history.append({
+                "role": "assistant",
+                "content": f"**{agent.name}**: {response}",
+                "avatar": agent.avatar_path
+            })
 
-        # 限制历史消息数量
-        if len(st.session_state.history) > 20:
-            st.session_state.history = st.session_state.history[-20:]
+    # 限制历史消息数量
+    if len(st.session_state.history) > 20:
+        st.session_state.history = st.session_state.history[-20:]
 
-        st.session_state.interactable = True
+    st.session_state.interactable = True
 
 # Sidebar
 with st.sidebar:
-    with st.expander("➕ 添加 Agent"):
-        if not st.session_state.get("interactable", True):
-            st.warning("请稍候...")
-        else:
-            new_agent_name = st.text_input("请输入新 Agent 的名字", key="new_agent_name")
-            if st.button("确认创建"):
-                st.session_state.interactable = False
-                if Agent.build_openie(new_agent_name):
-                    new_agent = Agent(new_agent_name)
-                    st.session_state.agent_list.append(new_agent)
-                    st.session_state[f"agent_{new_agent.name}"] = False
-                    st.success(f"Agent {new_agent_name} 创建成功！")
-                else:
-                    st.warning("无法创建 Agent {}".format(new_agent_name))
-                st.session_state.interactable = True
+    with st.sidebar:
+        with st.expander("➕ 添加 Agent"):
+            if not st.session_state.get("interactable", True):
+                st.warning("请稍候...")
+            else:
+                new_agent_name = st.text_input("请输入新 Agent 的名字", key="new_agent_name")
+                if st.button("确认创建"):
+                    if new_agent_name.strip():
+                        st.session_state.interactable = False
+                        create_agent_dialog(new_agent_name)
+                    else:
+                        st.warning("请先输入 Agent 的名字")
 
     with st.expander("🤖在线agent"):
         if not st.session_state.get("interactable", True):
