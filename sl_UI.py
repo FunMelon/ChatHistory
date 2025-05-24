@@ -2,6 +2,17 @@ import streamlit as st
 from src.agent import Agent
 from src.utils.global_logger import logger
 
+enable_blacklist = True  # 是否开启agent黑名单
+# 黑名单
+BLACKLIST = set()
+if enable_blacklist:
+    with open("./blacklist.txt", "r", encoding="utf-8") as file:
+        for line in file:
+            # 使用strip()方法去掉行末的换行符等额外字符
+            element = line.strip()
+            # 把处理后的元素添加到列表中
+            BLACKLIST.add(element)
+
 st.set_page_config(
     page_title="ChatHistory：穿越历史人物对话",
     page_icon="🏯",
@@ -13,6 +24,11 @@ st.title("🏯ChatHistory")
 # dialog 方式创建 Agent, FIXME: 将这个dialog设置为不可关闭状态，因为现在实在是不会所以只能没骨气地求用户了
 @st.dialog(title="🥺请完成后再关闭当前页面", width="large")
 def create_agent_dialog(name):
+    if enable_blacklist and name in BLACKLIST:
+        st.image("warn.jpg")  # 展示图片
+        st.error("你想干什么？！")
+        st.session_state.interactable = True
+        return
     st.markdown(f"🧟`{name}`正在转世中...")
     success = Agent.build_openie(name)
     if success:
