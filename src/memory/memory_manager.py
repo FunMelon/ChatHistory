@@ -6,16 +6,20 @@ from .open_ie import OpenIE, handle_import_openie
 from .qa_manager import QAManager
 from src.utils.global_logger import logger
 
+
 class MemoryManager:
     def __init__(self, _agent_name):
         self._agent_name = _agent_name
         try:
             from lib import quick_algo
+
             print("quick_algo库已加载")
         except ImportError:
             print("未找到quick_algo库，无法使用quick_algo算法")
-            print("请安装quick_algo库 - 在lib.quick_algo中，执行命令：python setup.py build_ext --inplace")
-        
+            print(
+                "请安装quick_algo库 - 在lib.quick_algo中，执行命令：python setup.py build_ext --inplace"
+            )
+
         # 1.初始化LLM客户端
         logger.info("为agent {} 创建LLM客户端".format(self._agent_name))
         llm_client_list = dict()
@@ -35,7 +39,9 @@ class MemoryManager:
         try:
             self._embed_manager.load_from_file()
         except Exception as e:
-            logger.error("从文件加载{} 的 Embedding库时发生错误：{}".format(self._agent_name, e))
+            logger.error(
+                "从文件加载{} 的 Embedding库时发生错误：{}".format(self._agent_name, e)
+            )
         logger.info("{} 的 Embedding库加载完成.".format(self._agent_name))
         # 3.初始化KG（指定agent名字的KG库）
         self._kg_manager = KGManager(self._agent_name)
@@ -64,7 +70,6 @@ class MemoryManager:
             llm_client_list[global_config["qa"]["llm"]["provider"]],
         )
 
-
     def import_oie(self):
         logger.info("正在导入OpenIE数据文件")
         try:
@@ -72,23 +77,26 @@ class MemoryManager:
         except Exception as e:
             logger.error("导入OpenIE数据文件时发生错误：{}".format(e))
             return False
-        if handle_import_openie(openie_data, self._embed_manager, self._kg_manager) is False:
+        if (
+            handle_import_openie(openie_data, self._embed_manager, self._kg_manager)
+            is False
+        ):
             logger.error("处理OpenIE数据时发生错误")
             return False
-    
+
     def query(self, question):
         """处理查询"""
         return self._qa_manager.process_query_beautiful(question)
-    
+
     def get_qa(self, question):
         """处理问答查询"""
         return self._qa_manager.answer_question(question)
-    
+
     def get_actor(self, question):
         """处理角色扮演查询"""
         ans, _ = self._qa_manager.actor_question(question)
-        return ans;
-    
+        return ans
+
     def get_actor_with_kg(self, question):
         """处理角色扮演查询，同时保留KG信息"""
         return self._qa_manager.actor_question(question)

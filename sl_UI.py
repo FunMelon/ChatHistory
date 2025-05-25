@@ -23,6 +23,7 @@ st.set_page_config(
     layout="wide",
 )
 
+
 def get_remote_ip() -> str:
     try:
         ctx = get_script_run_ctx()
@@ -37,16 +38,20 @@ def get_remote_ip() -> str:
 
     return session_info.request.remote_ip
 
+
 user_ip = get_remote_ip()
 logger.info(f"用户IP: {user_ip}正在访问")
 
 st.title("🏯ChatHistory")
 
+
 # dialog 方式创建 Agent, FIXME: 将这个dialog设置为不可关闭状态，因为现在实在是不会所以只能没骨气地求用户了
 @st.dialog(title="🥺请完成后再关闭当前页面", width="large")
 def create_agent_dialog(name):
     if enable_blacklist and name in BLACKLIST:
-        logger.warning(f"Agent创建行为，严重警告！用户 {user_ip} 尝试创建黑名单中的 Agent: {name}")
+        logger.warning(
+            f"Agent创建行为，严重警告！用户 {user_ip} 尝试创建黑名单中的 Agent: {name}"
+        )
         st.image("warn.jpg")  # 展示图片
         st.error("你想干什么？！")
         st.error("你的IP {}，已经被记录".format(user_ip))
@@ -66,6 +71,7 @@ def create_agent_dialog(name):
     st.session_state.interactable = True
     # st.rerun()  # 自动关闭弹窗并刷新界面，FIXME:这行代码有bug，rerun会导致登录的列表被清空
 
+
 @st.dialog(title="🥺请登录完成后再关闭当前页面", width="large")
 def agent_login_dialog(agent):
     st.markdown(f"🧙`{agent.name}`正在登录中...")
@@ -79,7 +85,8 @@ def agent_login_dialog(agent):
         st.error(f"Agent {agent.name} 登录失败")
     st.session_state.interactable = True
     # st.rerun()
-    
+
+
 # 初始化对话历史
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -98,6 +105,7 @@ for agent in st.session_state.agent_list:
     if checkbox_key not in st.session_state:
         st.session_state[checkbox_key] = False
 
+
 # 更新 agent 在线状态
 def update_agent_status():
     for agent in st.session_state.agent_list:
@@ -110,6 +118,7 @@ def update_agent_status():
         elif not desired_status and agent.online:
             agent.logout()
 
+
 update_agent_status()
 
 # 显示历史消息（包括头像）- 修复后的版本
@@ -120,32 +129,41 @@ for message in st.session_state.history:
 material = "这里会显示检索的结果"
 
 # 处理用户输入
-if user_input := st.chat_input(placeholder="和历史上的人物对话: ", disabled= not st.session_state.get("interactable", True)):
+if user_input := st.chat_input(
+    placeholder="和历史上的人物对话: ",
+    disabled=not st.session_state.get("interactable", True),
+):
     st.session_state.interactable = False
 
     # 用户输入消息
     logger.info(f"用户聊天内容，用户 {user_ip} 输入消息: {user_input}")
     with st.chat_message("user"):
         st.markdown(user_input)
-    st.session_state.history.append({
-    "role": "user",
-        "content": user_input,
-        "avatar": None  # 可选：你可以加用户自定义头像路径
-    })
+    st.session_state.history.append(
+        {
+            "role": "user",
+            "content": user_input,
+            "avatar": None,  # 可选：你可以加用户自定义头像路径
+        }
+    )
 
     # agent 响应
     for agent in st.session_state.agent_list:
         if agent.online:
             response, material = agent.chat(user_input)
-            logger.info(f"Agent聊天内容，用户 {user_ip} 收到 Agent: {agent.name} 的消息: {response}")
+            logger.info(
+                f"Agent聊天内容，用户 {user_ip} 收到 Agent: {agent.name} 的消息: {response}"
+            )
             with st.chat_message("assistant", avatar=agent.avatar_path):
                 st.markdown(f"**{agent.name}**")
                 st.markdown(response)
-            st.session_state.history.append({
-                "role": "assistant",
-                "content": f"**{agent.name}**: {response}",
-                "avatar": agent.avatar_path
-            })
+            st.session_state.history.append(
+                {
+                    "role": "assistant",
+                    "content": f"**{agent.name}**: {response}",
+                    "avatar": agent.avatar_path,
+                }
+            )
 
     # 限制历史消息数量
     if len(st.session_state.history) > 20:
@@ -160,7 +178,9 @@ with st.sidebar:
             if not st.session_state.get("interactable", True):
                 st.warning("请稍候...")
             else:
-                new_agent_name = st.text_input("请输入新 Agent 的名字", key="new_agent_name")
+                new_agent_name = st.text_input(
+                    "请输入新 Agent 的名字", key="new_agent_name"
+                )
                 if st.button("确认创建"):
                     if new_agent_name.strip():
                         st.session_state.interactable = False

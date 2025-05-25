@@ -10,25 +10,28 @@ from src.utils.config import global_config
 
 MAX_PARAGRAPH_LENGTH = 200  # 最大段落长度，超过会被切分
 
+
 def trad_to_simp(text):
     """繁体转简体"""
     try:
-        cc = OpenCC('t2s')
+        cc = OpenCC("t2s")
         return cc.convert(text)
     except Exception as e:
         logger.error(f"转换错误: {e}")
         return None
 
+
 def remove_references(text):
     """去除脚注标记如 [1]、[注 1] 等"""
-    return re.sub(r'\[[^\[\]]*?\]', '', text)
+    return re.sub(r"\[[^\[\]]*?\]", "", text)
+
 
 def download_avatar(image_url, save_path):
     """下载人物头像"""
     try:
         img_response = requests.get(image_url, stream=True)
         if img_response.status_code == 200:
-            with open(save_path, 'wb') as f:
+            with open(save_path, "wb") as f:
                 for chunk in img_response.iter_content(1024):
                     f.write(chunk)
             logger.info(f"人物头像已保存到 {save_path}")
@@ -37,11 +40,12 @@ def download_avatar(image_url, save_path):
     except Exception as e:
         logger.error("下载图片出错：%s", e)
 
+
 def split_long_paragraphs(text):
     if len(text) <= MAX_PARAGRAPH_LENGTH:
         return [text]
     # 按中文句号、问号、叹号分句
-    sentences = re.split(r'(?<=[。！？])', text)
+    sentences = re.split(r"(?<=[。！？])", text)
     chunks = []
     current_chunk = ""
     for sentence in sentences:
@@ -55,13 +59,12 @@ def split_long_paragraphs(text):
         chunks.append(current_chunk)
     return chunks
 
-def crawl_data(keyword): 
+
+def crawl_data(keyword):
     encoded_keyword = urllib.parse.quote(keyword)
     url = f"https://zh.wikipedia.org/wiki/{encoded_keyword}"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-    }
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
     try:
         response = requests.get(url, headers=headers)
@@ -70,7 +73,7 @@ def crawl_data(keyword):
             return
 
         response.encoding = response.apparent_encoding
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(response.text, "html.parser")
 
         # 获取段落内容
         content_div = soup.find("div", id="mw-content-text")
@@ -102,9 +105,15 @@ def crawl_data(keyword):
                 image_url = "https:" + img["src"]
 
         # 保存文本内容
-        dir_path = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(keyword)
+        dir_path = (
+            global_config["persistence"]["data_root_path"]
+            + "/"
+            + urllib.parse.quote(keyword)
+        )
         os.makedirs(dir_path, exist_ok=True)
-        filename = os.path.join(dir_path + global_config["persistence"]["raw_data_path"])
+        filename = os.path.join(
+            dir_path + global_config["persistence"]["raw_data_path"]
+        )
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(content_list, f, ensure_ascii=False, indent=2)
         logger.info(f"维基百科内容已保存到 {filename}")

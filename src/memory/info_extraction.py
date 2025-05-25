@@ -22,10 +22,11 @@ open_ie_doc_lock = Lock()
 # 创建一个事件标志，用于控制程序终止
 shutdown_event = Event()
 
+
 def process_single_text(pg_hash, raw_data, llm_client_list):
     """处理单个文本的函数，用于线程池"""
     temp_file_path = f"{TEMP_DIR}/{pg_hash}.json"
-    
+
     # 使用文件锁检查和读取缓存文件
     with file_lock:
         if os.path.exists(temp_file_path):
@@ -68,15 +69,17 @@ def process_single_text(pg_hash, raw_data, llm_client_list):
                 return None, pg_hash
         return doc_item, None
 
+
 def signal_handler(signum, frame):
     """处理Ctrl+C信号"""
     logger.info("\n接收到中断信号，正在优雅地关闭程序...")
     shutdown_event.set()
 
+
 def extract_triples(_agent_name: str):
     # 设置信号处理器
     # signal.signal(signal.SIGINT, signal_handler)
-    
+
     logger.info("--------进行信息提取--------\n")
 
     logger.info("创建LLM客户端")
@@ -97,13 +100,17 @@ def extract_triples(_agent_name: str):
 
     failed_sha256 = []
     open_ie_doc = []
-    
+
     # 创建线程池，最大线程数为50
     with ThreadPoolExecutor(max_workers=20) as executor:
         # 提交所有任务到线程池
-        future_to_hash = {executor.submit(process_single_text, pg_hash, raw_data, llm_client_list): pg_hash 
-                         for pg_hash, raw_data in zip(sha256_list, raw_datas)}
-        
+        future_to_hash = {
+            executor.submit(
+                process_single_text, pg_hash, raw_data, llm_client_list
+            ): pg_hash
+            for pg_hash, raw_data in zip(sha256_list, raw_datas)
+        }
+
         # 使用tqdm显示进度
         with tqdm.tqdm(total=len(future_to_hash), postfix="正在进行提取：") as pbar:
             # 处理完成的任务
@@ -115,7 +122,7 @@ def extract_triples(_agent_name: str):
                             if not f.done():
                                 f.cancel()
                         break
-                    
+
                     doc_item, failed_hash = future.result()
                     if failed_hash:
                         failed_sha256.append(failed_hash)

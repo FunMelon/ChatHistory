@@ -14,6 +14,7 @@ from src.utils.config import ENT_NAMESPACE, PG_NAMESPACE, REL_NAMESPACE, global_
 from .utils.hash import get_sha256
 from src.utils.global_logger import logger
 
+
 @dataclass
 class EmbeddingStoreItem:
     """嵌入库中的项"""
@@ -180,7 +181,12 @@ class EmbeddingStore:
 class EmbeddingManager:
     def __init__(self, llm_client: LLMClient, _agent_name):
         self._agent_name = _agent_name
-        store_dir = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(self._agent_name) + global_config["persistence"]["embedding_data_dir"]
+        store_dir = (
+            global_config["persistence"]["data_root_path"]
+            + "/"
+            + urllib.parse.quote(self._agent_name)
+            + global_config["persistence"]["embedding_data_dir"]
+        )
         self.paragraphs_embedding_store = EmbeddingStore(
             llm_client,
             PG_NAMESPACE,
@@ -213,7 +219,9 @@ class EmbeddingManager:
 
     def _store_rel_into_embedding(self, triple_list_data: Dict[str, List[List[str]]]):
         """将关系编码存入Embedding库"""
-        graph_triples = []  # a list of unique relation triple (in tuple) from all chunks
+        graph_triples = (
+            []
+        )  # a list of unique relation triple (in tuple) from all chunks
         for triples in triple_list_data.values():
             graph_triples.extend([tuple(t) for t in triples])
         graph_triples = list(set(graph_triples))

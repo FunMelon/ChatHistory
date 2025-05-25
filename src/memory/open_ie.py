@@ -9,6 +9,7 @@ from src.utils.global_logger import logger
 from .utils.hash import hash_deduplicate
 import urllib
 
+
 def _filter_invalid_entities(entities: List[str]) -> List[str]:
     """过滤无效的实体"""
     valid_entities = set()
@@ -105,7 +106,12 @@ class OpenIE:
     def load(_agent_name: str) -> "OpenIE":
         """从文件中加载OpenIE数据"""
         with open(
-            global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(_agent_name) + global_config["persistence"]["openie_data_path"], "r", encoding="utf-8"
+            global_config["persistence"]["data_root_path"]
+            + "/"
+            + urllib.parse.quote(_agent_name)
+            + global_config["persistence"]["openie_data_path"],
+            "r",
+            encoding="utf-8",
         ) as f:
             data = json.loads(f.read())
 
@@ -117,7 +123,12 @@ class OpenIE:
     def save(openie_data: "OpenIE", _agent_name: str):
         """保存OpenIE数据到文件"""
         with open(
-            global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(_agent_name) + global_config["persistence"]["openie_data_path"], "w", encoding="utf-8"
+            global_config["persistence"]["data_root_path"]
+            + "/"
+            + urllib.parse.quote(_agent_name)
+            + global_config["persistence"]["openie_data_path"],
+            "w",
+            encoding="utf-8",
         ) as f:
             f.write(json.dumps(openie_data._to_dict(), ensure_ascii=False, indent=4))
 
@@ -150,6 +161,7 @@ class OpenIE:
         )
         return raw_paragraph_dict
 
+
 def handle_import_openie(
     openie_data: OpenIE, embed_manager: EmbeddingManager, kg_manager: KGManager
 ) -> bool:
@@ -161,8 +173,8 @@ def handle_import_openie(
     # 索引的三元组列表
     triple_list_data = openie_data.extract_triple_dict()
     print(
-            f"段落数量：{len(raw_paragraphs)}，实体数量：{len(entity_list_data)}，三元组数量：{len(triple_list_data)}"
-        )
+        f"段落数量：{len(raw_paragraphs)}，实体数量：{len(entity_list_data)}，三元组数量：{len(triple_list_data)}"
+    )
     if len(raw_paragraphs) != len(entity_list_data) or len(raw_paragraphs) != len(
         triple_list_data
     ):

@@ -27,11 +27,13 @@ class QAManager:
             "qa": llm_client_qa,
         }
 
-    def process_query(self, question: str) -> Tuple[List[Tuple[str, float, float]], Dict[str, float] | None]:
+    def process_query(
+        self, question: str
+    ) -> Tuple[List[Tuple[str, float, float]], Dict[str, float] | None]:
         """处理查询"""
 
         # 生成问题的Embedding
-        part_start_time =time.perf_counter()
+        part_start_time = time.perf_counter()
         question_embedding = self.llm_client_list["embedding"].send_embedding_request(
             global_config["embedding"]["model"], question
         )
@@ -39,7 +41,7 @@ class QAManager:
         logger.debug(f"Embedding用时：{part_end_time - part_start_time:.5f}s")
 
         # 根据问题Embedding查询Relation Embedding库
-        part_start_time =time.perf_counter()
+        part_start_time = time.perf_counter()
         relation_search_res = self.embed_manager.relation_embedding_store.search_top_k(
             question_embedding,
             global_config["qa"]["params"]["relation_search_top_k"],
@@ -68,10 +70,10 @@ class QAManager:
                 if isinstance(triple, tuple) and len(triple) == 3:
                     relations.append(triple)
             except Exception as e:
-                    logger.error(f"⚠️ 三元组解析失败：{rel_str}，错误：{e}")
+                logger.error(f"⚠️ 三元组解析失败：{rel_str}，错误：{e}")
 
         # 根据问题Embedding查询Paragraph Embedding库
-        part_start_time =time.perf_counter()
+        part_start_time = time.perf_counter()
         paragraph_search_res = (
             self.embed_manager.paragraphs_embedding_store.search_top_k(
                 question_embedding,
@@ -84,7 +86,7 @@ class QAManager:
         if len(relation_search_res) != 0:
             logger.info("找到相关关系，将使用RAG进行检索")
             # 使用KG检索
-            part_start_time =time.perf_counter()
+            part_start_time = time.perf_counter()
             result, ppr_node_weights = self.kg_manager.kg_search(
                 relation_search_res, paragraph_search_res, self.embed_manager
             )
@@ -102,10 +104,12 @@ class QAManager:
                 res[0]
             ].str
             print(f"找到相关文段，相关系数：{res[1]:.8f}\n{raw_paragraph}\n\n")
-  
+
         return result, ppr_node_weights, relations
 
-    def process_query_beautiful(self, question: str) -> Tuple[List[Tuple[str, float, float]], Dict[str, float] | None]:
+    def process_query_beautiful(
+        self, question: str
+    ) -> Tuple[List[Tuple[str, float, float]], Dict[str, float] | None]:
         query_res, _, relations = self.process_query(question)
         knowledge = [
             (
@@ -116,7 +120,7 @@ class QAManager:
         ]
         knowledge.extend(relations)
         return knowledge
-    
+
     def answer_question(self, question: str):
         """回答问题"""
         start_time = time.time()  # 计时：总用时计算

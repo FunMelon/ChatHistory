@@ -72,6 +72,7 @@ def build_qa_context(
     ]
     return messages
 
+
 actor_system_prompt = """你是一个能让用户误以为是真人的角色扮演系统。请根据给定的角色和背景信息进行角色扮演。
 
 请注意以下要求:
@@ -83,6 +84,7 @@ actor_system_prompt = """你是一个能让用户误以为是真人的角色扮�
 - 尽量模仿真人聊天的风格，不能通过括号来说明动作，不要在回答的最后发出反问。
 - 我希望你能模仿真人的人格，不要在回答的最后加上“你可以继续询问其他问题”这类服务型的语句。
 """
+
 
 def build_actor_context(
     question: str, knowledge: list[(str, str, str)]

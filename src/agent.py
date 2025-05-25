@@ -7,25 +7,31 @@ import urllib.parse
 import os
 import json
 
+
 class Agent:
     def __init__(self, name: str):
-        self.name = name        # agent的名字
-        self.online = False     # agent的在线状态
-        self._memory = None     # agent的记忆库
-        self.avatar_path = global_config["persistence"]["data_root_path"] + "/" + urllib.parse.quote(self.name) + "/avatar.jpg"  # agent的头像路径
-    
+        self.name = name  # agent的名字
+        self.online = False  # agent的在线状态
+        self._memory = None  # agent的记忆库
+        self.avatar_path = (
+            global_config["persistence"]["data_root_path"]
+            + "/"
+            + urllib.parse.quote(self.name)
+            + "/avatar.jpg"
+        )  # agent的头像路径
+
     def chat(self, query: str):
         """与agent进行对话"""
         response, material = self._memory.get_actor_with_kg(query)
         return response, material
-    
+
     def login(self):
         """
         加载记忆库
         """
         try:
             self._memory = MemoryManager(self.name)  # 根据name初始化agent的记忆库
-            try: 
+            try:
                 self._memory.import_oie()  # 第一次登录时导入openie数据
             except Exception as e:
                 logger.error(f"导入openie数据失败: {e}")
@@ -42,35 +48,35 @@ class Agent:
         self.online = False
         logger.info(f"Agent {self.name} 下线了.")
         return True
-    
+
     @staticmethod
     def get_all_agent_names():
         path = global_config["persistence"]["data_root_path"]
         agent_dict = {}
         agent_list = []
-    
+
         try:
             # 遍历指定路径下的所有文件夹
             for item in os.listdir(path):
                 item_path = os.path.join(path, item)
-            
+
                 if os.path.isdir(item_path):
                     original_name = item
                     decoded_name = urllib.parse.unquote(original_name)
                     agent_dict[original_name] = decoded_name
                     agent_list.append(decoded_name)
-        
+
             # 保存到list.json文件
             list_json_path = os.path.join(path, "list.json")
-            with open(list_json_path, 'w', encoding='utf-8') as f:
+            with open(list_json_path, "w", encoding="utf-8") as f:
                 json.dump(agent_dict, f, indent=4, ensure_ascii=False)
-            
+
             return agent_list
-    
+
         except Exception as e:
             logger.error(f"获取所有agent名称失败: {e}")
             return []
-    
+
     @staticmethod
     def build_openie(name: str):
         """
@@ -93,5 +99,5 @@ class Agent:
         except Exception as e:
             logger.error(f"三元组提取失败: {e}")
             return False
-        
+
         return True

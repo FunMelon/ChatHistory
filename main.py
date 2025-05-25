@@ -4,6 +4,7 @@ from src.memory.memory_manager import MemoryManager
 from src.memory.info_extraction import pre_process
 from src.utils.global_logger import logger
 
+
 def process_instruction(
     inst: str,
     memoryManager: MemoryManager,
@@ -23,9 +24,13 @@ def process_instruction(
                 if question == "":
                     continue
                 res = memoryManager.query(question)
-                print("找到查询结果*****************************************************************")
+                print(
+                    "找到查询结果*****************************************************************"
+                )
                 print(res)
-                print("****************************************************************************")
+                print(
+                    "****************************************************************************"
+                )
         case "qa":
             logger.info("进入QA模式")
             while True:
@@ -51,10 +56,11 @@ def process_instruction(
         case _:
             print(f"无效指令：{inst}")
 
+
 def cmd():
     memory = MemoryManager("苏格拉底")  # 创建MemoryManager实例
-    pre_process("苏格拉底") # 读取文本生成OpenIE数据
-    memory.import_oie() # 导入OpenIE数据到记忆库
+    pre_process("苏格拉底")  # 读取文本生成OpenIE数据
+    memory.import_oie()  # 导入OpenIE数据到记忆库
     # print(memory.query("苏格拉底和哲学？"))  # 回答问题
     while True:
         print("🏯ChatHistory> ", end="")
@@ -77,14 +83,10 @@ def cmd():
             elif inst == "exit":
                 print("退出控制台")
                 exit(0)
-            elif (
-                process_instruction(
-                    inst, memory
-                )
-                is False
-            ):
+            elif process_instruction(inst, memory) is False:
                 print("指令流程出现错误，请检查")
                 exit(0)
+
 
 if __name__ == "__main__":
     cmd()

@@ -2,9 +2,7 @@ from typing import List, Any, Tuple
 
 
 def dyn_select_top_k(
-    score: List[Tuple[Any, float]],
-    jmp_factor: float = 0.5,
-    var_factor: float = 1.0
+    score: List[Tuple[Any, float]], jmp_factor: float = 0.5, var_factor: float = 1.0
 ) -> List[Tuple[Any, float, float]]:
     """动态TopK选择"""
     # 按照分数排序（降序）
