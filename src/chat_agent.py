@@ -3,16 +3,22 @@ from src.utils.config import global_config
 from src.utils.global_logger import logger
 from src.crawler.wiki_crawler import crawl_data
 from src.memory.info_extraction import extract_triples
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage, ChatMessage, AIMessage
 import urllib.parse
 import os
 import json
 
 
-class Agent:
+class ChatAgent:
+    """
+    聊天agent，专门负责与用户进行对话
+    """
     def __init__(self, name: str):
         self.name = name  # agent的名字
         self.online = False  # agent的在线状态
         self._memory = None  # agent的记忆库
+        self.llm = None  # agent的llm客户端
         self.avatar_path = (
             global_config["persistence"]["data_root_path"]
             + "/"
@@ -20,10 +26,57 @@ class Agent:
             + "/avatar.jpg"
         )  # agent的头像路径
 
-    def chat(self, query: str):
-        """与agent进行对话"""
-        response, material = self._memory.get_actor_with_kg(query)
-        return response, material
+    def chat(self, query: str, history: list = None):
+        """与 agent 进行对话"""
+        query_info = self._memory.query(query)  # 获取查询信息
+
+        messages = []
+
+        # 1. 设定角色扮演
+        system_prompt = (
+            f"你现在是历史人物：{self.name}。请根据你的身份、背景以及记忆中的信息回答用户的问题，"
+            f"语气和风格应与这个人物相符。"
+        )
+        messages.append(SystemMessage(content=system_prompt))
+
+        # 2. 添加历史消息（如果有）
+        if history:
+            for turn in history:
+                role = None
+                content = ""
+                if isinstance(turn, HumanMessage):
+                    messages.append(turn)
+                    continue
+                elif isinstance(turn, AIMessage):
+                    messages.append(turn)
+                    continue
+                elif isinstance(turn, ChatMessage):
+                    role = turn.role
+                    content = turn.content
+                elif isinstance(turn, dict):
+                    role = turn.get("sender") or turn.get("role") or "unknown"
+                    content = turn.get("content", "")
+                else:
+                    logger.warning(f"未知的历史消息格式: {turn}")
+                    continue
+
+                # 修正：统一转换为合法的 assistant 消息
+                if role.lower() == "user":
+                    messages.append(HumanMessage(content=content))
+                else:
+                    # 将 agent 名字加入内容中，而不是放在 role 字段
+                    formatted_content = f"【{role}】{content}"
+                    messages.append(AIMessage(content=formatted_content))
+
+        # 3. 添加当前用户问题和上下文信息
+        messages.append(HumanMessage(
+            content=f"你记忆中的相关信息：{query_info}\n\n用户问题：{query}"
+        ))
+
+        response = self.llm.invoke(messages)
+
+        return response.content, query_info
+
 
     def login(self):
         """
@@ -37,6 +90,13 @@ class Agent:
                 logger.error(f"导入openie数据失败: {e}")
                 return False
             self.online = True  # 设置agent为在线状态
+            self.llm = ChatOpenAI(  # TODO：这边是强制要求使用localhost的llm，可以改成不同的
+                model_name=global_config["qa"]["llm"]["model"],
+                temperature=0,
+                openai_api_key=global_config["llm_providers"]["localhost"]["api_key"],
+                openai_api_base=global_config["llm_providers"]["localhost"]["base_url"],
+            )
+            
             logger.info(f"Agent {self.name} 上线了.")
             return True
         except Exception as e:
@@ -45,6 +105,7 @@ class Agent:
 
     def logout(self):
         self._memory = None  # 清空agent的记忆库
+        self.llm = None
         self.online = False
         logger.info(f"Agent {self.name} 下线了.")
         return True

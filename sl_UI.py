@@ -1,8 +1,9 @@
 import streamlit as st
-from src.agent import Agent
+from langchain.schema import HumanMessage, ChatMessage, AIMessage, SystemMessage
 from src.utils.global_logger import logger
 from streamlit import runtime
 from streamlit.runtime.scriptrunner import get_script_run_ctx
+from src.director_agent import DirectorAgent
 
 enable_blacklist = True  # 是否开启agent黑名单
 # 黑名单
@@ -58,11 +59,9 @@ def create_agent_dialog(name):
         st.session_state.interactable = True
         return
     st.markdown(f"🧟`{name}`正在转世中...")
-    success = Agent.build_openie(name)
+    success = st.session_state.director.create_agent(name)
     if success:
-        new_agent = Agent(name)
-        st.session_state.agent_list.append(new_agent)
-        st.session_state[f"agent_{new_agent.name}"] = False
+        st.session_state[f"agent_{name}"] = False
         st.success(f"Agent {name} 创建成功！")
         logger.info(f"Agent创建行为，用户 {user_ip} 创建了 Agent: {name}")
     else:
@@ -92,15 +91,15 @@ if "history" not in st.session_state:
     st.session_state.history = []
 
 # 初始化 agent 列表
-if "agent_list" not in st.session_state:
-    st.session_state.agent_list = [Agent(name) for name in Agent.get_all_agent_names()]
+if "director" not in st.session_state:
+    st.session_state.director = DirectorAgent()
 
 # 控制用户交互状态
 if "interactable" not in st.session_state:
     st.session_state.interactable = True
 
 # 初始化每个 agent 的 checkbox 状态
-for agent in st.session_state.agent_list:
+for agent in st.session_state.director.actors:
     checkbox_key = f"agent_{agent.name}"
     if checkbox_key not in st.session_state:
         st.session_state[checkbox_key] = False
@@ -108,7 +107,7 @@ for agent in st.session_state.agent_list:
 
 # 更新 agent 在线状态
 def update_agent_status():
-    for agent in st.session_state.agent_list:
+    for agent in st.session_state.director.actors:
         key = f"agent_{agent.name}"
         desired_status = st.session_state.get(key, False)
         if desired_status and not agent.online:
@@ -123,53 +122,89 @@ update_agent_status()
 
 # 显示历史消息（包括头像）- 修复后的版本
 for message in st.session_state.history:
-    with st.chat_message(message["role"], avatar=message.get("avatar", None)):
-        st.markdown(message["content"])
+    # 判断角色类型和头像
+    if isinstance(message, HumanMessage):
+        role = "user"
+        avatar = None  # 用户头像可自定义
+    elif isinstance(message, AIMessage):
+        role = "assistant"
+        avatar = None  # AI 默认头像
+    elif isinstance(message, SystemMessage):
+        # 可以选择跳过系统提示不显示
+        continue
+    elif isinstance(message, ChatMessage):
+        role = message.role  # 多 agent 聊天保留角色名
+        agent = st.session_state.director.actors.get(role)
+        avatar = getattr(agent, "avatar_path", None) if agent else None
+    else:
+        continue  # 未知消息类型，跳过
+
+    with st.chat_message(role, avatar=avatar):
+        st.markdown(message.content)
 
 material = "这里会显示检索的结果"
 
 # 处理用户输入
 if user_input := st.chat_input(
-    placeholder="和历史上的人物对话: ",
+    placeholder="chat with history: ",
     disabled=not st.session_state.get("interactable", True),
 ):
     st.session_state.interactable = False
 
-    # 用户输入消息
+    # 记录用户输入
     logger.info(f"用户聊天内容，用户 {user_ip} 输入消息: {user_input}")
     with st.chat_message("user"):
         st.markdown(user_input)
+
+    # 添加用户输入到 history（结构化）
     st.session_state.history.append(
-        {
-            "role": "user",
-            "content": user_input,
-            "avatar": None,  # 可选：你可以加用户自定义头像路径
-        }
+        HumanMessage(content=user_input)
     )
 
-    # agent 响应
-    for agent in st.session_state.agent_list:
-        if agent.online:
-            response, material = agent.chat(user_input)
-            logger.info(
-                f"Agent聊天内容，用户 {user_ip} 收到 Agent: {agent.name} 的消息: {response}"
-            )
+    # 调用导演 agent 执行完整多轮交互（含 agent 选择）
+    try:
+        for agent_name, response, query_info in st.session_state.director.chat(
+            user_input, history=st.session_state.history
+        ):
+
+            logger.info(f"Agent聊天内容，用户 {user_ip} 收到 Agent: {agent_name} 的消息: {response}")
+
+            # 对话完成的内容
+            if agent_name == "END":
+                st.session_state.interactable = True
+                st.success("该您了")
+                break
+
+            # 获取 agent 实例
+            agent = None
+            for a in st.session_state.director.actors:
+                if a.name == agent_name:
+                    agent = a
+                    break
+            if agent is None:
+                st.error(f"Agent {agent_name} 不存在")
+                st.session_state.interactable = True
+                break
+            # 渲染聊天 UI
             with st.chat_message("assistant", avatar=agent.avatar_path):
                 st.markdown(f"**{agent.name}**")
                 st.markdown(response)
-            st.session_state.history.append(
-                {
-                    "role": "assistant",
-                    "content": f"**{agent.name}**: {response}",
-                    "avatar": agent.avatar_path,
-                }
-            )
 
-    # 限制历史消息数量
-    if len(st.session_state.history) > 20:
-        st.session_state.history = st.session_state.history[-20:]
+            # 保存 agent 的回复到历史记录
+            st.session_state.history.append(
+                ChatMessage(role=agent.name, content=response)
+            )
+            
+    except Exception as e:
+        logger.error(f"导演 agent 处理失败: {e}")
+        st.error("对话过程中发生错误，请稍后再试。")
+
+    # 控制历史长度（防爆）
+    if len(st.session_state.history) > 30:
+        st.session_state.history = st.session_state.history[-30:]
 
     st.session_state.interactable = True
+
 
 # Sidebar
 with st.sidebar:
@@ -192,7 +227,7 @@ with st.sidebar:
         if not st.session_state.get("interactable", True):
             st.warning("请稍候...")
         else:
-            for agent in st.session_state.agent_list:
+            for agent in st.session_state.director.actors:
                 key = f"agent_{agent.name}"
                 st.checkbox(label=agent.name, key=key)
 

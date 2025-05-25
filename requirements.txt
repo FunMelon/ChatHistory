@@ -16,3 +16,5 @@ gradio==5.30.0
 streamlit==1.45.1
 streamlit-chat==0.1.1
 bs4==0.0.2
+langchain==0.3.25
+langchain-openai==0.3.18
