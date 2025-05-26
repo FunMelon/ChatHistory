@@ -6,9 +6,8 @@ from langchain.schema import HumanMessage, AIMessage
 import random
 
 class DirectorAgent:
-    def __init__(self, max_rounds=1):
+    def __init__(self):
         self.actors = [ChatAgent(name) for name in ChatAgent.get_all_agent_names()]  # 聊天agent的列表，即导演所安排的演员
-        self.max_rounds = max_rounds
         self.llm = ChatOpenAI( # TODO：这边是强制要求使用localhost的llm，可以改成不同的
             model_name=global_config["qa"]["llm"]["model"],
             temperature=0,
@@ -53,12 +52,13 @@ class DirectorAgent:
         logger.info(f"导演的直接回复是：{response.content}")
         return response.content.strip()
 
-    def chat(self, user_input, history: list = None, max_query = 3):
-        # for i in range(len(self.actors)):
-            # yield self.actors[i].name, user_input, self.actors[i].name
-            
+    def chat(self, user_input, history: list = None, max_round = 3, max_query = 3):
         """
         根据用户的输入产生一轮的多 agent 回复
+        :param user_input: 用户输入的内容
+        :param history: 历史对话记录，默认为 None
+        :param max_rounds: agent之间交互的最大轮数，默认为 3
+        :param max_query: 每个 agent 查询保留的最多条目数
         """
         # 检查是否有agent在线
         if not any(agent.online for agent in self.actors):
@@ -77,7 +77,7 @@ class DirectorAgent:
             f"{msg.role if hasattr(msg, 'role') else '用户'}: {msg.content}" for msg in history
         )
 
-        while round < self.max_rounds:
+        while round < max_round:
             logger.info(f"第 {round + 1} 轮，导演 agent 进行决策")
             next_agent_name = self.decide_next_agent(history_text, last_response)
             # next_agent_name = self.random_agent()

@@ -163,7 +163,10 @@ if user_input := st.chat_input(
     # 调用导演 agent 执行完整多轮交互（含 agent 选择）
     try:
         for agent_name, response, query_info in st.session_state.director.chat(
-            user_input, history=st.session_state.history
+            user_input,
+            history=st.session_state.history,
+            max_round=st.session_state.get("max_round", 3),
+            max_query=st.session_state.get("max_query", 3)
         ):
 
             logger.info(f"Agent聊天内容，用户 {user_ip} 收到 Agent: {agent_name} 的消息: {response}")
@@ -239,8 +242,16 @@ with st.sidebar:
             else:
                 st.markdown(f"{i}轮检索结果: {item}")
 
-    with st.expander("⚙️个人信息配置"):
-        st.text("这里是个人信息配置的内容（待施工）")
+    with st.expander("⚙️聊天系统配置"):
+
+        # 设置 max_round 和 max_query，默认值分别为 3
+        max_round = st.slider("Agent 之间交流最大轮数", min_value=1, max_value=10, value=3)
+        max_query = st.slider("记忆库检索保留的最大条数", min_value=0, max_value=10, value=3)
+
+        # 存储在 session_state 中
+        st.session_state["max_round"] = max_round
+        st.session_state["max_query"] = max_query
+
 
 if not st.session_state.get("interactable", True):
     st.info("⚙️ 后台正在处理，请耐心等待...")
