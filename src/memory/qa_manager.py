@@ -118,7 +118,7 @@ class QAManager:
             )
             for res in query_res
         ]
-        return knowledge[:max_results], None
+        return knowledge[:max_results]
 
     def answer_question(self, question: str):
         """回答问题"""
