@@ -204,8 +204,8 @@ if user_input := st.chat_input(
         st.error("对话过程中发生错误，请稍后再试。")
 
     # 控制历史长度（防爆）
-    if len(st.session_state.history) > 30:
-        st.session_state.history = st.session_state.history[-30:]
+    if len(st.session_state.history) > 10:
+        st.session_state.history = st.session_state.history[-10:]
 
     st.session_state.interactable = True
 
