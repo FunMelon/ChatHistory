@@ -54,6 +54,9 @@ def _load_config(config, config_file_path):
     if "qa" in file_config:
         config["qa"] = file_config["qa"]
 
+    if "director" in file_config:
+        config["director"] = file_config["director"]
+        
     if "persistence" in file_config:
         config["persistence"] = file_config["persistence"]
 
@@ -113,6 +116,21 @@ global_config = dict(
             "llm": {
                 "provider": "localhost",
                 "model": "qa",
+            },
+        },
+        "director": {
+            "params": {
+                "relation_search_top_k": 10,
+                "relation_threshold": 0.75,
+                "paragraph_search_top_k": 10,
+                "paragraph_node_weight": 0.05,
+                "ent_filter_top_k": 10,
+                "ppr_damping": 0.8,
+                "res_top_k": 10,
+            },
+            "llm": {
+                "provider": "localhost",
+                "model": "director",
             },
         },
         "persistence": {

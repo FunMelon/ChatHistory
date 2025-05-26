@@ -7,17 +7,17 @@ api_key = "去硅基流动官网申请"
 [entity_extract.llm]
 # 设置用于实体提取的LLM模型
 provider = "localhost"                 # 服务提供商
-model = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" # 模型名称
+model = "Qwen/Qwen3-32B" # 模型名称
 
 [rdf_build.llm]
 # 设置用于RDF构建的LLM模型
 provider = "localhost"                 # 服务提供商
-model = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" # 模型名称
+model = "Qwen/Qwen3-32B" # 模型名称
 
 [embedding]
 # 设置用于文本嵌入的Embedding模型
 provider = "localhost"          # 服务提供商
-model = "BAAI/bge-large-zh-v1.5" # 模型名称
+model = "Pro/BAAI/bge-m3" # 模型名称
 dimension = 1024                # 嵌入维度
 
 [rag.params]
@@ -28,7 +28,12 @@ synonym_threshold = 0.8   # 同义词阈值（相似度高于此阈值的词语�
 [qa.llm]
 # 设置用于QA的LLM模型
 provider = "localhost"     # 服务提供商
-model = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" # 模型名称
+model = "Qwen/Qwen3-32B" # 模型名称
+
+[director.llm]
+# 设置导演LLM模型
+provider = "localhost"     # 服务提供商
+model = "Qwen/Qwen3-32B" # 模型名称
 
 [qa.params]
 # QA参数配置
@@ -43,6 +48,7 @@ res_top_k = 3                 # 最终提供的文段TopK
 [persistence]
 # 持久化配置（存储中间数据，防止重复计算）
 data_root_path = "data"                              # 数据根目录
+# 下面的路径会和根路径以及agent的名称拼接得到
 raw_data_path = "/import.json"                   # 原始数据路径
 openie_data_path = "/openie.json"                # OpenIE数据路径
 embedding_data_dir = "/embedding"                # 嵌入数据目录

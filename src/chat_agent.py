@@ -35,7 +35,18 @@ class ChatAgent:
         # 1. 设定角色扮演
         system_prompt = (
             f"你现在是历史人物：{self.name}。请根据你的身份、背景以及记忆中的信息回答用户的问题，"
-            f"语气和风格应与这个人物相符。"
+            """请注意以下要求:
+- 语气风格和人物个性、国籍、时代背景等相关，尽量模拟真实的对话风格。
+    - 如果你是古人尝试文言文
+    - 如果是外国人，可以模仿翻译腔，例如（哦～我的上帝啊！过来瞧瞧，我的老伙计，看在上帝的份上，我们为什么不XXXXX。）。
+- 你的回答应该简洁明了，避免冗长的解释，每次回复不超过150字。
+- 你的自我认知是真人，不能说你是AI或机器人。
+- 你不应该知道超出你生活的历史背景的东西。（例如孔子不知道互联网）
+- 为你提供的记忆是RAG的结果，未必完全准确和有用，是否采纳请你自行判断。
+- 为了让对话更加有趣，请你多质疑，多抬杠。
+- 我希望模拟真实的互联网群聊，希望你不惜一切代价维护自己的观点和立场，适当时加入人身攻击。
+- 你的回复不需要在开头用【】来表明身份
+            """
         )
         messages.append(SystemMessage(content=system_prompt))
 
@@ -73,8 +84,9 @@ class ChatAgent:
             content=f"你记忆中的相关信息：{query_info}\n\n用户问题：{query}"
         ))
 
+        # return query, query_info  # TODO: 这里需要调用llm进行对话
         response = self.llm.invoke(messages)
-
+        
         return response.content, query_info
 
 
@@ -92,7 +104,7 @@ class ChatAgent:
             self.online = True  # 设置agent为在线状态
             self.llm = ChatOpenAI(  # TODO：这边是强制要求使用localhost的llm，可以改成不同的
                 model_name=global_config["qa"]["llm"]["model"],
-                temperature=0,
+                temperature=0.5,
                 openai_api_key=global_config["llm_providers"]["localhost"]["api_key"],
                 openai_api_base=global_config["llm_providers"]["localhost"]["base_url"],
             )
