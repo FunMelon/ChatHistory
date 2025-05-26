@@ -56,6 +56,10 @@ if "director" not in st.session_state:
 if "interactable" not in st.session_state:
     st.session_state.interactable = True
 
+# 是否启用随机聊天模式
+if "rand" not in st.session_state:
+    st.session_state.rand= False  # 默认值
+
 # Agent 登录与创建逻辑
 @st.dialog(title="🥺请完成后再关闭当前页面", width="large")
 def create_agent_dialog(name):
@@ -144,7 +148,8 @@ if user_input := st.chat_input(
             user_input,
             history=st.session_state.history,
             max_round=st.session_state.get("max_round", 3),
-            max_query=st.session_state.get("max_query", 3)
+            max_query=st.session_state.get("max_query", 3),
+            rand=st.session_state.rand
         ):
             if agent_name == "END":
                 st.session_state.interactable = True
@@ -207,6 +212,7 @@ with st.sidebar:
         st.session_state["max_round"] = st.slider("Agent 之间交流最大轮数", 1, 10, 3)
         st.session_state["max_query"] = st.slider("记忆库检索保留的最大条数", 0, 10, 3)
         st.session_state["max_history"] = st.slider("聊天历史保留条数", 1, 20, 10)
+        st.session_state.rand = st.checkbox("启用随机聊天模式（不需要导演的协同）", value=st.session_state.rand)
 
 # Loading 状态提示
 if not st.session_state.get("interactable", True):

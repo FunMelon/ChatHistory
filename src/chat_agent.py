@@ -84,7 +84,7 @@ class ChatAgent:
             content=f"你记忆中的相关信息：{query_info}\n\n用户问题：{query}"
         ))
 
-        # return query, query_info  # TODO: 这里需要调用llm进行对话
+        # return query, query_info 
         response = self.llm.invoke(messages)
         
         return response.content, query_info
