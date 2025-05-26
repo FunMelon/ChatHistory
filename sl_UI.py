@@ -142,8 +142,7 @@ for message in st.session_state.history:
     with st.chat_message(role, avatar=avatar):
         st.markdown(message.content)
 
-material = "这里会显示检索的结果"
-
+material = ["这里会显示数据库检索的结果"]
 # 处理用户输入
 if user_input := st.chat_input(
     placeholder="chat with history: ",
@@ -189,7 +188,9 @@ if user_input := st.chat_input(
             with st.chat_message("assistant", avatar=agent.avatar_path):
                 st.markdown(f"**{agent.name}**")
                 st.markdown(response)
-
+            # 处理查询信息
+            if query_info:
+                material.append(query_info)
             # 保存 agent 的回复到历史记录
             st.session_state.history.append(
                 ChatMessage(role=agent.name, content=response)
@@ -232,7 +233,11 @@ with st.sidebar:
                 st.checkbox(label=agent.name, key=key)
 
     with st.expander("🔍️记忆库检索结果"):
-        st.text(material)
+        for i, item in enumerate(material):
+            if i == 0:
+                st.markdown(item)
+            else:
+                st.markdown(f"{i}轮检索结果: {item}")
 
     with st.expander("⚙️个人信息配置"):
         st.text("这里是个人信息配置的内容（待施工）")
