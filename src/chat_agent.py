@@ -26,9 +26,9 @@ class ChatAgent:
             + "/avatar.jpg"
         )  # agent的头像路径
 
-    def chat(self, query: str, history: list = None):
+    def chat(self, query: str, history: list = None, max_results: int = 3):
         """与 agent 进行对话"""
-        query_info = self._memory.query(query)  # 获取查询信息
+        query_info = self._memory.query(query, max_results)  # 获取查询信息
 
         messages = []
 

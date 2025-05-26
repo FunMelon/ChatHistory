@@ -8,7 +8,7 @@ import os
 from src.utils.global_logger import logger
 from src.utils.config import global_config
 
-MAX_PARAGRAPH_LENGTH = 200  # 最大段落长度，超过会被切分
+MAX_PARAGRAPH_LENGTH = 100  # 最大段落长度，超过会被切分
 
 
 def trad_to_simp(text):

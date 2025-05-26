@@ -84,9 +84,9 @@ class MemoryManager:
             logger.error("处理OpenIE数据时发生错误")
             return False
 
-    def query(self, question):
+    def query(self, question, max_results=3):
         """处理查询"""
-        return self._qa_manager.process_query_beautiful(question)
+        return self._qa_manager.process_query_beautiful(question, max_results)
 
     def get_qa(self, question):
         """处理问答查询"""

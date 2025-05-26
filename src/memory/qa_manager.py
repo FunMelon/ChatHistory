@@ -105,12 +105,12 @@ class QAManager:
             ].str
             print(f"找到相关文段，相关系数：{res[1]:.8f}\n{raw_paragraph}\n\n")
 
-        return result, ppr_node_weights, relations
+        return result, ppr_node_weights
 
     def process_query_beautiful(
-        self, question: str
+        self, question: str, max_results: int = 3
     ) -> Tuple[List[Tuple[str, float, float]], Dict[str, float] | None]:
-        query_res, _, relations = self.process_query(question)
+        query_res, _ = self.process_query(question)
         knowledge = [
             (
                 self.embed_manager.paragraphs_embedding_store.store[res[0]].str,
@@ -118,14 +118,13 @@ class QAManager:
             )
             for res in query_res
         ]
-        knowledge.extend(relations)
-        return knowledge
+        return knowledge[:max_results], None
 
     def answer_question(self, question: str):
         """回答问题"""
         start_time = time.time()  # 计时：总用时计算
         # 处理查询
-        query_res, _, relations = self.process_query(question)
+        query_res, _ = self.process_query(question)
 
         knowledge = [
             (
@@ -134,7 +133,6 @@ class QAManager:
             )
             for res in query_res
         ]
-        knowledge.extend(relations)
         # 将检索结果和问题发送给LLM，获取答案
         # 构造上下文
         context = prompt_template.build_qa_context(question, knowledge)
@@ -152,7 +150,7 @@ class QAManager:
         """角色扮演回答问题"""
         start_time = time.time()  # 计时：总用时计算
         # 处理查询
-        query_res, _, relations = self.process_query(question)
+        query_res, _ = self.process_query(question)
 
         knowledge = [
             (
@@ -161,7 +159,6 @@ class QAManager:
             )
             for res in query_res
         ]
-        knowledge.extend(relations)
         # 将检索结果和问题发送给LLM，获取答案
         # 构造上下文
         context = prompt_template.build_actor_context(question, knowledge)

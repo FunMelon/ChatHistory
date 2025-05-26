@@ -3,9 +3,10 @@ from src.utils.global_logger import logger
 from src.utils.config import global_config
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage
+import random
 
 class DirectorAgent:
-    def __init__(self, max_rounds=3):
+    def __init__(self, max_rounds=1):
         self.actors = [ChatAgent(name) for name in ChatAgent.get_all_agent_names()]  # 聊天agent的列表，即导演所安排的演员
         self.max_rounds = max_rounds
         self.llm = ChatOpenAI( # TODO：这边是强制要求使用localhost的llm，可以改成不同的
@@ -20,11 +21,23 @@ class DirectorAgent:
         依照传入的名称添加一个新的agent
         如果无法创建则返回False，如果创建成功则返回True
         """
+        if any(agent.name == agent_name for agent in self.actors):
+            logger.error(f"Agent {agent_name} 已经存在，无法重复创建")
+            return False
         if not ChatAgent.build_openie(agent_name):
             return False
         self.actors.append(ChatAgent(agent_name))
         return True
-        
+    
+    def random_agent(self):
+        """
+        随机选择一个在线的agent
+        """
+        online_agents = [agent for agent in self.actors if agent.online]
+        if not online_agents:
+            return None
+        return random.choice(online_agents).name
+    
     def decide_next_agent(self, history, last_response):
         prompt = f"""你是一个协调者，以下是用户和Agent的对话历史记录。请决定下一个应该调用的Agent名字（只能从以下列表选择或者返回关键字）：
         {list(agent.name for agent in self.actors if agent.online)}
@@ -40,7 +53,7 @@ class DirectorAgent:
         logger.info(f"导演的直接回复是：{response.content}")
         return response.content.strip()
 
-    def chat(self, user_input, history: list = None):
+    def chat(self, user_input, history: list = None, max_query = 3):
         # for i in range(len(self.actors)):
             # yield self.actors[i].name, user_input, self.actors[i].name
             
@@ -67,6 +80,7 @@ class DirectorAgent:
         while round < self.max_rounds:
             logger.info(f"第 {round + 1} 轮，导演 agent 进行决策")
             next_agent_name = self.decide_next_agent(history_text, last_response)
+            # next_agent_name = self.random_agent()
             logger.info(f"第 {round + 1} 轮，导演决定 agent: {next_agent_name}回答")
 
             if next_agent_name == "END":
@@ -82,9 +96,8 @@ class DirectorAgent:
                 return
 
             logger.info(f"第 {round + 1} 轮，由 agent {agent.name} 回答")
-            last_response, query_info = agent.chat(last_response, history)
+            last_response, query_info = agent.chat(last_response, history, max_query)
 
-            # ✅ 修改这里：使用 AIMessage，并把 agent.name 加入内容中
             formatted_response = f"【{agent.name}】{last_response}"
             history.append(AIMessage(content=formatted_response))  # 不再使用 ChatMessage
 
