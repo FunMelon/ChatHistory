@@ -23,6 +23,8 @@ pip install -r requirements.txt
 quick_algo库并没有包含在requirement中，请在文件夹找到对应的程序自行编译安装。
 ### 关于agent黑名单
 在入口函数中找到enable_blacklist可以启用和关闭黑名单机制（默认启用），需要在根目录下面补充blacklist黑名单和warning.jpg警告图片（自备）
+### 配置文件
+请参照config.toml进行自定义，初始未配置好API会导致无法通信。
 ### 启用控制台回答
 ```sh
 python main.py
